@@ -34,7 +34,9 @@ bool MySQL::connect()
 	else
 	{
 		LOG_INFO << __FILE__ << ":" << __LINE__ << ":"
-				 << "connect mysql failed!";
+        << "connect mysql failed! Error: "
+        << mysql_error(_conn);
+
 	}
 	return p;
 }

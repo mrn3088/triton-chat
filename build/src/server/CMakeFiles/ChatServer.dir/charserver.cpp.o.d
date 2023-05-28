@@ -308,4 +308,6 @@ src/server/CMakeFiles/ChatServer.dir/charserver.cpp.o: \
  /usr/include/c++/11/bits/basic_ios.tcc /usr/include/c++/11/ostream \
  /usr/include/c++/11/bits/ostream.tcc \
  /usr/include/c++/11/bits/istream.tcc \
- /home/mrn/Desktop/chat-server/chatserver/include/server/chatservice.hpp
+ /home/mrn/Desktop/chat-server/chatserver/include/server/chatservice.hpp \
+ /home/mrn/Desktop/chat-server/chatserver/include/server/usermodel.hpp \
+ /home/mrn/Desktop/chat-server/chatserver/include/server/user.hpp

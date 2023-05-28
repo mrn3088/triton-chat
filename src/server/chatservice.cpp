@@ -27,8 +27,9 @@ MsgHandler ChatService::getHandler(int msgid)
 	// record to error log if msgid does not exist
 	auto it = _msgHandlerMap.find(msgid);
 	if (it == _msgHandlerMap.end())
-	{	
-		return [=](const TcpConnectionPtr &conn, json &js, Timestamp time) {
+	{
+		return [=](const TcpConnectionPtr &conn, json &js, Timestamp time)
+		{
 			LOG_ERROR << "msgid: " << msgid << " does not exist!";
 		};
 	}
@@ -38,13 +39,72 @@ MsgHandler ChatService::getHandler(int msgid)
 	}
 }
 
-// handle login message 
+// handle login message
 void ChatService::login(const TcpConnectionPtr &conn, json &js, Timestamp time)
 {
-	LOG_INFO << "do login service...";
+	int id = js["id"].get<int>();
+	std::string pwd = js["password"];
+
+	User user = _userModel.query(id);
+
+	if (user.getId() == id && user.getPassword() == pwd)
+	{
+		if (user.getState() == "online")
+		{
+			// user already online, reject login request
+			json response;
+			response["msgid"] = LOGIN_MSG_ACK;
+			response["errno"] = 2;
+			response["errmsg"] = "user already online";
+			conn->send(response.dump());
+		}
+		else
+		{
+			// login success, state offline => online
+			user.setState("online");
+			_userModel.updateState(user);
+
+			json response;
+			response["msgid"] = LOGIN_MSG_ACK;
+			response["errno"] = 0;
+			response["id"] = user.getId();
+			response["name"] = user.getName();
+			conn->send(response.dump());
+		}
+	}
+	else
+	{
+		// login failed
+		json response;
+		response["msgid"] = LOGIN_MSG_ACK;
+		response["errno"] = 1;
+		response["errmsg"] = "incorrect user id or password!";
+		conn->send(response.dump());
+	}
 }
 
 void ChatService::reg(const TcpConnectionPtr &conn, json &js, Timestamp time)
 {
-	LOG_INFO << "do reg service...";
+	std::string name = js["name"];
+	std::string pwd = js["password"];
+
+	User user;
+	user.setName(name);
+	user.setPassword(pwd);
+	bool state = _userModel.insert(user);
+	if (state)
+	{
+		json response;
+		response["msgid"] = REG_MSG_ACK;
+		response["errno"] = 0;
+		response["id"] = user.getId();
+		conn->send(response.dump());
+	}
+	else
+	{
+		json response;
+		response["msgid"] = REG_MSG_ACK;
+		response["errno"] = 1;
+		conn->send(response.dump());
+	}
 }
