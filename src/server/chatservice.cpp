@@ -38,6 +38,7 @@ MsgHandler ChatService::getHandler(int msgid)
 	}
 }
 
+// handle login message 
 void ChatService::login(const TcpConnectionPtr &conn, json &js, Timestamp time)
 {
 	LOG_INFO << "do login service...";
