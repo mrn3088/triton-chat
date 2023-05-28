@@ -22,6 +22,9 @@ public:
 	// query method, return some result
 	MYSQL_RES *query(std::string sql);
 
+	// get connection
+	MYSQL *getConnection();
+
 private:
 	MYSQL *_conn;
 };
