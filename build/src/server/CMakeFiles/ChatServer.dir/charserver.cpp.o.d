@@ -309,5 +309,10 @@ src/server/CMakeFiles/ChatServer.dir/charserver.cpp.o: \
  /usr/include/c++/11/bits/ostream.tcc \
  /usr/include/c++/11/bits/istream.tcc \
  /home/mrn/Desktop/chat-server/chatserver/include/server/chatservice.hpp \
+ /usr/include/c++/11/mutex /usr/include/c++/11/chrono \
+ /usr/include/c++/11/ratio /usr/include/c++/11/ctime \
+ /usr/include/c++/11/bits/parse_numbers.h \
+ /usr/include/c++/11/bits/std_mutex.h \
+ /usr/include/c++/11/bits/unique_lock.h \
  /home/mrn/Desktop/chat-server/chatserver/include/server/usermodel.hpp \
  /home/mrn/Desktop/chat-server/chatserver/include/server/user.hpp
