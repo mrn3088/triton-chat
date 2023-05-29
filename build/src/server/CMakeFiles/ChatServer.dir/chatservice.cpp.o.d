@@ -263,6 +263,7 @@ src/server/CMakeFiles/ChatServer.dir/chatservice.cpp.o: \
  /home/mrn/Desktop/chat-server/chatserver/include/server/usermodel.hpp \
  /home/mrn/Desktop/chat-server/chatserver/include/server/user.hpp \
  /home/mrn/Desktop/chat-server/chatserver/include/server/offlinemessagemodel.hpp \
+ /home/mrn/Desktop/chat-server/chatserver/include/server/friendmodel.hpp \
  /home/mrn/Desktop/chat-server/chatserver/thirdparty/json.hpp \
  /usr/include/c++/11/cassert /usr/include/c++/11/ciso646 \
  /usr/include/c++/11/numeric /usr/include/c++/11/bits/stl_numeric.h \

@@ -1,5 +1,6 @@
 #include "chatservice.hpp"
 #include "public.hpp"
+
 #include <muduo/base/Logging.h>
 #include <vector>
 
@@ -29,6 +30,10 @@ ChatService::ChatService()
 
     _msgHandlerMap.insert({ONE_CHAT_MSG,
                            std::bind(&ChatService::oneChat, this, std::placeholders::_1,
+                                     std::placeholders::_2, std::placeholders::_3)});
+    
+    _msgHandlerMap.insert({ADD_FRIEND_MSG,
+                           std::bind(&ChatService::addFriend, this, std::placeholders::_1,
                                      std::placeholders::_2, std::placeholders::_3)});
 }
 
@@ -97,6 +102,21 @@ void ChatService::login(const TcpConnectionPtr &conn, json &js, Timestamp time)
                 _offlineMsgModel.remove(id);
             }
 
+            // query friend information
+            std::vector<User> userVec = _friendModel.query(id);
+            if (!userVec.empty())
+            {
+                std::vector<std::string> vec2;
+                for (User &user : userVec)
+                {
+                    json js;
+                    js["id"] = user.getId();
+                    js["name"] = user.getName();
+                    js["state"] = user.getState();
+                    vec2.push_back(js.dump());
+                }
+                response["friends"] = vec2;
+            }
             conn->send(response.dump());
         }
     }
@@ -162,7 +182,6 @@ void ChatService::clientCloseException(const TcpConnectionPtr &conn)
     _userModel.updateState(user);
 }
 
-
 void ChatService::oneChat(const TcpConnectionPtr &conn, json &js, Timestamp time)
 {
     int toid = js["to"].get<int>();
@@ -177,6 +196,15 @@ void ChatService::oneChat(const TcpConnectionPtr &conn, json &js, Timestamp time
         }
     }
 
-    // not online, store offline message 
+    // not online, store offline message
     _offlineMsgModel.insert(toid, js.dump());
+}
+
+void ChatService::addFriend(const TcpConnectionPtr &conn, json &js, Timestamp time)
+{
+    int userid = js["id"].get<int>();
+    int friendid = js["friendid"].get<int>();
+
+    // store friend relationship to database
+    _friendModel.insert(userid, friendid);
 }

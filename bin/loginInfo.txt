@@ -1,3 +1,4 @@
 {"msgid":1,"id":1,"password":"123456"}
 {"msgid":1,"id":2,"password":"666666"}
 {"msgid":5,"id":1,"from":"hello","to":2,"msg":"hello, I am hello!"}
+{"msgid":6,"id":1,"friendid":2}

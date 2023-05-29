@@ -2,15 +2,15 @@
 #include "chatservice.hpp"
 #include <iostream>
 #include <signal.h>
-void resetHandler(int) 
+void resetHandler(int)
 {
 	ChatService::instance()->reset();
 	std::cout << "ChatService reset!" << std::endl;
 	exit(0);
 }
 
-
-int main() {
+int main()
+{
 
 	signal(SIGINT, resetHandler);
 	EventLoop loop;
