@@ -15,6 +15,8 @@ public:
 	// update user state
 	bool updateState(const User& user);
 
+	// reset user state
+	void resetState();
 };
 
 #endif

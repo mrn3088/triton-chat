@@ -10,6 +10,12 @@ ChatService *ChatService::instance()
     return &service;
 }
 
+// server error, reset client data
+void ChatService::reset()
+{
+    _userModel.resetState();
+}
+
 // register message and corresponding callback handler
 ChatService::ChatService()
 {

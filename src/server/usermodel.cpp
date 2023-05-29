@@ -69,3 +69,14 @@ bool UserModel::updateState(const User &user)
 
 	return false;
 }
+
+void UserModel::resetState()
+{
+	char sql[1024] = "UPDATE Users SET state = 'offline'";
+
+	MySQL mysql;
+	if (mysql.connect())
+	{
+		mysql.update(sql);
+	}
+}

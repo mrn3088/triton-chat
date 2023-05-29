@@ -32,6 +32,8 @@ public:
 	MsgHandler getHandler(int msgid);
 	// handle client close exception
 	void clientCloseException(const TcpConnectionPtr &conn);
+	// server error, reset client data
+	void reset();
 
 private:
 	ChatService();
