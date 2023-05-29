@@ -46,7 +46,8 @@ bool MySQL::update(std::string sql)
 {
 	if (mysql_query(_conn, sql.c_str()))
 	{
-		LOG_INFO << __FILE__ << ":" << __LINE__ << ":" << sql << "update failed!";
+		LOG_INFO << __FILE__ << ":" << __LINE__ << ":" << sql << "update failed! Error: "
+				 << mysql_error(_conn);
 		return false;
 	}
 	return true;

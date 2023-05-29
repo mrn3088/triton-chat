@@ -7,6 +7,7 @@
 #include <mutex>
 
 #include "usermodel.hpp"
+#include "offlinemessagemodel.hpp"
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -43,6 +44,9 @@ private:
 
 	// mutex for _userConnMap
 	std::mutex _connMutex;
+
+	// offline message model
+	OfflineMsgModel _offlineMsgModel;
 
 	// data access object
 	UserModel _userModel;

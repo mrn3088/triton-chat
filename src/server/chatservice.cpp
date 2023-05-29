@@ -1,6 +1,7 @@
 #include "chatservice.hpp"
 #include "public.hpp"
 #include <muduo/base/Logging.h>
+#include <vector>
 
 // method to get the singleton instance
 ChatService *ChatService::instance()
@@ -79,6 +80,17 @@ void ChatService::login(const TcpConnectionPtr &conn, json &js, Timestamp time)
             response["errno"] = 0;
             response["id"] = user.getId();
             response["name"] = user.getName();
+
+            // query offline message
+            std::vector<std::string> vec = _offlineMsgModel.query(id);
+
+            if (!vec.empty())
+            {
+                response["offlinemsg"] = vec;
+                // read offline message, delete offline message
+                _offlineMsgModel.remove(id);
+            }
+
             conn->send(response.dump());
         }
     }
@@ -159,5 +171,6 @@ void ChatService::oneChat(const TcpConnectionPtr &conn, json &js, Timestamp time
         }
     }
 
-    // not online, store offline message TBD
+    // not online, store offline message 
+    _offlineMsgModel.insert(toid, js.dump());
 }
