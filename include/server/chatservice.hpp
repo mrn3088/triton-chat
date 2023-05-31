@@ -9,6 +9,7 @@
 #include "usermodel.hpp"
 #include "offlinemessagemodel.hpp"
 #include "friendmodel.hpp"
+#include "groupmodel.hpp"
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -31,6 +32,12 @@ public:
 	void oneChat(const TcpConnectionPtr &conn, json &js, Timestamp time);
 	// add friend
 	void addFriend(const TcpConnectionPtr &conn, json &js, Timestamp time);
+	// create group
+	void createGroup(const TcpConnectionPtr &conn, json &js, Timestamp time);
+	// join group
+	void addGroup(const TcpConnectionPtr &conn, json &js, Timestamp time);
+	// group chat
+	void groupChat(const TcpConnectionPtr &conn, json &js, Timestamp time);
 	// obtain msg handler
 	MsgHandler getHandler(int msgid);
 	// handle client close exception
@@ -58,6 +65,10 @@ private:
 
 	// friend data model
 	FriendModel _friendModel;
+
+	// group data model
+	GroupModel _groupModel;
+	
 };
 
 #endif

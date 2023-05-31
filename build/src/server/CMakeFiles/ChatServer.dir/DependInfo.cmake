@@ -11,10 +11,11 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/mrn/Desktop/chat-server/chatserver/src/server/charserver.cpp" "src/server/CMakeFiles/ChatServer.dir/charserver.cpp.o" "gcc" "src/server/CMakeFiles/ChatServer.dir/charserver.cpp.o.d"
   "/home/mrn/Desktop/chat-server/chatserver/src/server/chatservice.cpp" "src/server/CMakeFiles/ChatServer.dir/chatservice.cpp.o" "gcc" "src/server/CMakeFiles/ChatServer.dir/chatservice.cpp.o.d"
   "/home/mrn/Desktop/chat-server/chatserver/src/server/db/db.cpp" "src/server/CMakeFiles/ChatServer.dir/db/db.cpp.o" "gcc" "src/server/CMakeFiles/ChatServer.dir/db/db.cpp.o.d"
-  "/home/mrn/Desktop/chat-server/chatserver/src/server/friendmodel.cpp" "src/server/CMakeFiles/ChatServer.dir/friendmodel.cpp.o" "gcc" "src/server/CMakeFiles/ChatServer.dir/friendmodel.cpp.o.d"
   "/home/mrn/Desktop/chat-server/chatserver/src/server/main.cpp" "src/server/CMakeFiles/ChatServer.dir/main.cpp.o" "gcc" "src/server/CMakeFiles/ChatServer.dir/main.cpp.o.d"
-  "/home/mrn/Desktop/chat-server/chatserver/src/server/offlinemessagemodel.cpp" "src/server/CMakeFiles/ChatServer.dir/offlinemessagemodel.cpp.o" "gcc" "src/server/CMakeFiles/ChatServer.dir/offlinemessagemodel.cpp.o.d"
-  "/home/mrn/Desktop/chat-server/chatserver/src/server/usermodel.cpp" "src/server/CMakeFiles/ChatServer.dir/usermodel.cpp.o" "gcc" "src/server/CMakeFiles/ChatServer.dir/usermodel.cpp.o.d"
+  "/home/mrn/Desktop/chat-server/chatserver/src/server/model/friendmodel.cpp" "src/server/CMakeFiles/ChatServer.dir/model/friendmodel.cpp.o" "gcc" "src/server/CMakeFiles/ChatServer.dir/model/friendmodel.cpp.o.d"
+  "/home/mrn/Desktop/chat-server/chatserver/src/server/model/groupmodel.cpp" "src/server/CMakeFiles/ChatServer.dir/model/groupmodel.cpp.o" "gcc" "src/server/CMakeFiles/ChatServer.dir/model/groupmodel.cpp.o.d"
+  "/home/mrn/Desktop/chat-server/chatserver/src/server/model/offlinemessagemodel.cpp" "src/server/CMakeFiles/ChatServer.dir/model/offlinemessagemodel.cpp.o" "gcc" "src/server/CMakeFiles/ChatServer.dir/model/offlinemessagemodel.cpp.o.d"
+  "/home/mrn/Desktop/chat-server/chatserver/src/server/model/usermodel.cpp" "src/server/CMakeFiles/ChatServer.dir/model/usermodel.cpp.o" "gcc" "src/server/CMakeFiles/ChatServer.dir/model/usermodel.cpp.o.d"
   )
 
 # Targets to which this target links.

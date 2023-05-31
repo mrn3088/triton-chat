@@ -31,9 +31,21 @@ ChatService::ChatService()
     _msgHandlerMap.insert({ONE_CHAT_MSG,
                            std::bind(&ChatService::oneChat, this, std::placeholders::_1,
                                      std::placeholders::_2, std::placeholders::_3)});
-    
+
     _msgHandlerMap.insert({ADD_FRIEND_MSG,
                            std::bind(&ChatService::addFriend, this, std::placeholders::_1,
+                                     std::placeholders::_2, std::placeholders::_3)});
+
+    _msgHandlerMap.insert({CREATE_GROUP_MSG,
+                           std::bind(&ChatService::createGroup, this, std::placeholders::_1,
+                                     std::placeholders::_2, std::placeholders::_3)});
+
+    _msgHandlerMap.insert({ADD_GROUP_MSG,
+                           std::bind(&ChatService::addGroup, this, std::placeholders::_1,
+                                     std::placeholders::_2, std::placeholders::_3)});
+
+    _msgHandlerMap.insert({GROUP_CHAT_MSG,
+                           std::bind(&ChatService::groupChat, this, std::placeholders::_1,
                                      std::placeholders::_2, std::placeholders::_3)});
 }
 
@@ -207,4 +219,50 @@ void ChatService::addFriend(const TcpConnectionPtr &conn, json &js, Timestamp ti
 
     // store friend relationship to database
     _friendModel.insert(userid, friendid);
+}
+
+void ChatService::createGroup(const TcpConnectionPtr &conn, json &js, Timestamp time)
+{
+    int userid = js["id"].get<int>();
+    std::string name = js["groupname"];
+    std::string desc = js["groupdesc"];
+
+    // store new group info
+    Group group(-1, name, desc);
+    if (_groupModel.createGroup(group))
+    {
+        // add the creater into the group
+        _groupModel.addGroup(userid, group.getId(), "creater");
+    }
+}
+
+void ChatService::addGroup(const TcpConnectionPtr &conn, json &js, Timestamp time)
+{
+    int userid = js["id"].get<int>();
+    int groupid = js["groupid"].get<int>();
+    _groupModel.addGroup(userid, groupid, "normal");
+}
+
+void ChatService::groupChat(const TcpConnectionPtr &conn, json &js, Timestamp time)
+{
+    int userid = js["id"].get<int>();
+    int groupid = js["groupid"].get<int>();
+    std::vector<int> useridVec = _groupModel.queryGroupUsers(userid, groupid);
+
+    std::lock_guard<std::mutex> lock(_connMutex);
+
+    for (int id : useridVec)
+    {
+        auto it = _userConnMap.find(id);
+        if (it != _userConnMap.end())
+        {
+            // send group message to the user
+            it->second->send(js.dump());
+        }
+        else
+        {
+            // store offline group message
+            _offlineMsgModel.insert(id, js.dump());
+        }
+    }
 }

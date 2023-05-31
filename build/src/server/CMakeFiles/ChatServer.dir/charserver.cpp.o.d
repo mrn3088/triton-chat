@@ -314,7 +314,10 @@ src/server/CMakeFiles/ChatServer.dir/charserver.cpp.o: \
  /usr/include/c++/11/bits/parse_numbers.h \
  /usr/include/c++/11/bits/std_mutex.h \
  /usr/include/c++/11/bits/unique_lock.h \
- /home/mrn/Desktop/chat-server/chatserver/include/server/usermodel.hpp \
- /home/mrn/Desktop/chat-server/chatserver/include/server/user.hpp \
- /home/mrn/Desktop/chat-server/chatserver/include/server/offlinemessagemodel.hpp \
- /home/mrn/Desktop/chat-server/chatserver/include/server/friendmodel.hpp
+ /home/mrn/Desktop/chat-server/chatserver/include/server/model/usermodel.hpp \
+ /home/mrn/Desktop/chat-server/chatserver/include/server/model/user.hpp \
+ /home/mrn/Desktop/chat-server/chatserver/include/server/model/offlinemessagemodel.hpp \
+ /home/mrn/Desktop/chat-server/chatserver/include/server/model/friendmodel.hpp \
+ /home/mrn/Desktop/chat-server/chatserver/include/server/model/groupmodel.hpp \
+ /home/mrn/Desktop/chat-server/chatserver/include/server/model/group.hpp \
+ /home/mrn/Desktop/chat-server/chatserver/include/server/model/groupuser.hpp

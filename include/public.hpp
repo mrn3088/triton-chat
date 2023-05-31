@@ -13,5 +13,8 @@ enum EnMsgType
 	REG_MSG_ACK,		// register msg ack
 	ONE_CHAT_MSG,		// one chat msg
 	ADD_FRIEND_MSG,		// add friend msg
+	CREATE_GROUP_MSG,	// create group msg
+	ADD_GROUP_MSG,		// add group msg
+	GROUP_CHAT_MSG,		// group chat msg
 };
 #endif
