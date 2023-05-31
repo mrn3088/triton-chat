@@ -28,6 +28,10 @@ ChatService::ChatService()
                            std::bind(&ChatService::reg, this, std::placeholders::_1,
                                      std::placeholders::_2, std::placeholders::_3)});
 
+    _msgHandlerMap.insert({LOGOUT_MSG,
+                           std::bind(&ChatService::logout, this, std::placeholders::_1,
+                                     std::placeholders::_2, std::placeholders::_3)});
+
     _msgHandlerMap.insert({ONE_CHAT_MSG,
                            std::bind(&ChatService::oneChat, this, std::placeholders::_1,
                                      std::placeholders::_2, std::placeholders::_3)});
@@ -197,6 +201,24 @@ void ChatService::reg(const TcpConnectionPtr &conn, json &js, Timestamp time)
         conn->send(response.dump());
     }
 }
+
+void ChatService::logout(const TcpConnectionPtr &conn, json &js, Timestamp time)
+{
+    int userid = js["id"].get<int>();
+    {
+        std::lock_guard<std::mutex> lock(_connMutex);
+        auto it = _userConnMap.find(userid);
+        if (it != _userConnMap.end())
+        {
+            _userConnMap.erase(it);
+        }
+    }
+
+    // update user state to offline
+    User user(userid, "", "", "offline");
+    _userModel.updateState(user);
+}
+
 
 void ChatService::clientCloseException(const TcpConnectionPtr &conn)
 {

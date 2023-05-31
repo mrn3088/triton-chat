@@ -31,6 +31,9 @@ std::vector<Group> g_currentUserGroupList;
 // show current user data
 void showCurrentUserData();
 
+// controls whether the main menu is running
+bool isMainMenuRunning = false;
+
 // receive thread
 void readTaskHandler(int clientfd);
 
@@ -142,7 +145,10 @@ int main(int argc, char **argv)
 						std::cerr << responsejs << std::endl;
 						// record current user friend list
 						if (responsejs.contains("friends"))
-						{
+						{	
+							// in case of login again, clear the friend list
+							g_currentUserFriendList.clear();
+
 							std::vector<std::string> vec = responsejs["friends"];
 							for (std::string &str : vec)
 							{
@@ -158,6 +164,9 @@ int main(int argc, char **argv)
 						// record current user group list
 						if (responsejs.contains("groups"))
 						{
+							// in case of login again, clear the group list
+							g_currentUserGroupList.clear();
+
 							std::vector<std::string> vec1 = responsejs["groups"];
 							for (std::string &groupstr : vec1)
 							{
@@ -212,11 +221,17 @@ int main(int argc, char **argv)
 							}
 						}
 
-						// create a thread to receive message from server
-						std::thread readTask(readTaskHandler, clientfd);
-						readTask.detach();
+						static bool isFirstLogin = true;
+						if (isFirstLogin)
+						{
+							isFirstLogin = false;
+							// create a thread to receive message from server
+							std::thread readTask(readTaskHandler, clientfd);
+							readTask.detach();
+						}
 
 						// login success, enter main menu
+						isMainMenuRunning = true;
 						mainMenu(clientfd);
 					}
 				}
@@ -310,7 +325,7 @@ void readTaskHandler(int clientfd)
 	while (true)
 	{
 		char buffer[1024] = {0};
-		int len = recv(clientfd, buffer, 1024, 0);
+		int len = recv(clientfd, buffer, 1024, 0); 
 		if (-1 == len || 0 == len)
 		{
 			close(clientfd);
@@ -384,7 +399,7 @@ void mainMenu(int clientfd)
 	help();
 
 	char buffer[1024] = {0};
-	while (true)
+	while (isMainMenuRunning)
 	{
 		std::cin.getline(buffer, 1024);
 		std::string commandbuf(buffer);
@@ -531,8 +546,22 @@ void groupchat(int clientfd, std::string str)
 	}
 }
 
-void logout(int, std::string)
+void logout(int clientfd, std::string str)
 {
+	json js;
+	js["msgid"] = LOGOUT_MSG;
+	js["id"] = g_currentUser.getId();
+	std::string buffer = js.dump();
+
+	int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+	if (-1 == len)
+	{
+		std::cerr << "send logout msg error: " << buffer << std::endl;
+	}
+	else
+	{
+		isMainMenuRunning = false;
+	}
 }
 
 std::string getCurrentTime()

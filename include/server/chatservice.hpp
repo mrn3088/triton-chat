@@ -38,6 +38,8 @@ public:
 	void addGroup(const TcpConnectionPtr &conn, json &js, Timestamp time);
 	// group chat
 	void groupChat(const TcpConnectionPtr &conn, json &js, Timestamp time);
+	// logout
+	void logout(const TcpConnectionPtr &conn, json &js, Timestamp time);
 	// obtain msg handler
 	MsgHandler getHandler(int msgid);
 	// handle client close exception
