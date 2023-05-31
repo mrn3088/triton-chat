@@ -3,6 +3,7 @@
 #include "chatservice.hpp"
 #include <functional>
 #include <string>
+#include <iostream>
 
 using json = nlohmann::json;
 
@@ -40,7 +41,7 @@ void ChatServer::onMessage(const TcpConnectionPtr &conn,
 	std::string buf = buffer->retrieveAllAsString();
 	// deserialize the json string
 	json js = json::parse(buf);
-
+	std::cout << js << std::endl;
 	auto msgHandler = ChatService::instance()->getHandler(js["msgid"].get<int>());
 
 	// call the callback function

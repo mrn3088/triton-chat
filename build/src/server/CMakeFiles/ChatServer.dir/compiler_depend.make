@@ -389,7 +389,8 @@ src/server/CMakeFiles/ChatServer.dir/charserver.cpp.o: ../src/server/charserver.
   ../include/server/model/friendmodel.hpp \
   ../include/server/model/groupmodel.hpp \
   ../include/server/model/group.hpp \
-  ../include/server/model/groupuser.hpp
+  ../include/server/model/groupuser.hpp \
+  /usr/include/c++/11/iostream
 
 src/server/CMakeFiles/ChatServer.dir/chatservice.cpp.o: ../src/server/chatservice.cpp \
   /usr/include/stdc-predef.h \
@@ -2994,9 +2995,9 @@ src/server/CMakeFiles/ChatServer.dir/model/usermodel.cpp.o: ../src/server/model/
 
 /usr/include/c++/11/bits/enable_special_members.h:
 
-/usr/include/c++/11/iostream:
-
 /usr/include/mysql/mysql.h:
+
+/usr/include/c++/11/iostream:
 
 /usr/include/boost/config/workaround.hpp:
 
