@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include <functional>
+#include <unordered_map>
 using json = nlohmann::json;
 
 #include <unistd.h>
@@ -36,7 +38,7 @@ void readTaskHandler(int clientfd);
 std::string getCurrentTime();
 
 // main menu of the chat client
-void mainMenu();
+void mainMenu(int clientfd);
 
 // send thread
 int main(int argc, char **argv)
@@ -197,7 +199,7 @@ int main(int argc, char **argv)
 						readTask.detach();
 
 						// login success, enter main menu
-						mainMenu();
+						mainMenu(clientfd);
 					}
 				}
 			}
@@ -287,8 +289,175 @@ void showCurrentUserData()
 
 void readTaskHandler(int clientfd)
 {
+	while (true)
+	{
+		char buffer[1024] = {0};
+		int len = recv(clientfd, buffer, 1024, 0);
+		if (-1 == len || 0 == len)
+		{
+			close(clientfd);
+			exit(-1);
+		}
+
+		// receive message from server, deserialize it
+		json js = json::parse(buffer);
+		if (ONE_CHAT_MSG == js["msgid"].get<int>())
+		{
+			std::cout << js["time"].get<std::string>() << " [" << js["id"] << "] "
+					  << js["name"].get<std::string>() << " said: "
+					  << js["msg"].get<std::string>() << std::endl;
+			continue;
+		}
+	}
 }
 
-void mainMenu()
+// "help" command handler
+void help(int fd = 0, std::string str = "");
+
+// "chat" command handler
+void chat(int, std::string);
+
+// "addfriend" command handler
+void addfriend(int, std::string);
+
+// "creategroup" command handler
+void creategroup(int, std::string);
+
+// "addgroup" command handler
+void addgroup(int, std::string);
+
+// "groupchat" command handler
+void groupchat(int, std::string);
+
+// "quit" command handler
+void logout(int, std::string);
+
+// command supported by client
+std::unordered_map<std::string, std::string> commandMap{
+	{"help", "show all command, format help"},
+	{"chat", "one to one chat, format chat:friendid:message"},
+	{"addfriend", "add friend, format addfriend:friendid"},
+	{"creategroup", "create a group, format creategroup:groupname:groupdesc"},
+	{"addgroup", "add a group, format addgroup:groupid"},
+	{"groupchat", "chat in a group, format groupchat:groupid:message"},
+	{"logout", "logout, format logout"}};
+
+// command handler supported by chat client
+std::unordered_map<std::string, std::function<void(int, std::string)>> commandHandlerMap = {
+	{"help", help},
+	{"chat", chat},
+	{"addfriend", addfriend},
+	{"creategroup", creategroup},
+	{"addgroup", addgroup},
+	{"groupchat", groupchat},
+	{"logout", logout}};
+
+void mainMenu(int clientfd)
 {
+	help();
+
+	char buffer[1024] = {0};
+	while (true)
+	{
+		std::cin.getline(buffer, 1024);
+		std::string commandbuf(buffer);
+		std::string command;
+		int idx = commandbuf.find(":");
+		if (-1 == idx)
+		{
+			command = commandbuf;
+		}
+		else
+		{
+			command = commandbuf.substr(0, idx);
+		}
+		auto it = commandHandlerMap.find(command);
+		if (it == commandHandlerMap.end())
+		{
+			std::cerr << "invalid input command!" << std::endl;
+			continue;
+		}
+
+		it->second(clientfd, commandbuf.substr(idx + 1, commandbuf.size() - idx));
+	}
+}
+
+void help(int, std::string)
+{
+	std::cout << "command list:" << std::endl;
+	for (const auto &p : commandMap)
+	{
+		std::cout << p.first << " : " << p.second << std::endl;
+	}
+}
+
+void addfriend(int clientfd, std::string str)
+{
+	int friendid = atoi(str.c_str());
+	json js;
+	js["msgid"] = ADD_FRIEND_MSG;
+	js["id"] = g_currentUser.getId();
+	js["friendid"] = friendid;
+	std::string buffer = js.dump();
+
+	int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+	if (-1 == len)
+	{
+		std::cerr << "send addfriend msg error: " << buffer << std::endl;
+	}
+}
+
+void chat(int clientfd, std::string str)
+{
+	int idx = str.find(":");
+	if (-1 == idx)
+	{
+		std::cerr << "chat command invalid!" << std::endl;
+		return;
+	}
+
+	int friendid = atoi(str.substr(0, idx).c_str());
+	std::string msg = str.substr(idx + 1, str.size() - idx);
+
+	json js;
+	js["msgid"] = ONE_CHAT_MSG;
+	js["id"] = g_currentUser.getId();
+	js["name"] = g_currentUser.getName();
+	js["toid"] = friendid;
+	js["msg"] = msg;
+	js["time"] = getCurrentTime();
+	std::string buffer = js.dump();
+
+	int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+	if (-1 == len)
+	{
+		std::cerr << "send chat msg error: " << buffer << std::endl;
+	}
+}
+
+void creategroup(int, std::string)
+{
+}
+
+void addgroup(int, std::string)
+{
+}
+
+void groupchat(int, std::string)
+{
+}
+
+void logout(int, std::string)
+{
+}
+
+std::string getCurrentTime()
+{
+    auto tt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    struct tm *ptm = localtime(&tt);
+    char date[60] = {0};
+    sprintf(date, "%d-%02d-%02d %02d:%02d:%02d",
+            (int)ptm->tm_year + 1900, (int)ptm->tm_mon + 1, (int)ptm->tm_mday,
+            (int)ptm->tm_hour, (int)ptm->tm_min, (int)ptm->tm_sec);
+    return std::string(date);
 }
