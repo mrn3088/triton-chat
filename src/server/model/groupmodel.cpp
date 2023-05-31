@@ -65,7 +65,7 @@ std::vector<Group> GroupModel::queryGroups(int userid)
 
 	for (Group &group : groupVec)
 	{
-		sprintf(sql, "SELECT a.id, a.name, a.state, b.grouprole FROM User a INNER JOIN \
+		sprintf(sql, "SELECT a.id, a.name, a.state, b.grouprole FROM Users a INNER JOIN \
 					GroupUser b on b.userid = a.id WHERE b.groupid = %d",
 				group.getId());
 		

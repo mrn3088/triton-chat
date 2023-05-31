@@ -42,7 +42,7 @@ void mainMenu(int clientfd);
 
 // send thread
 int main(int argc, char **argv)
-{	
+{
 	const char *ip;
 	uint16_t port;
 
@@ -53,12 +53,12 @@ int main(int argc, char **argv)
 		std::cerr << "using default ip and port : 127.0.0.1 6000" << std::endl;
 		ip = "127.0.0.1";
 		port = 6000;
-	} else {
+	}
+	else
+	{
 		ip = argv[1];
 		port = atoi(argv[2]);
 	}
-
-
 
 	// create socket on client side
 	int clientfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -139,7 +139,7 @@ int main(int argc, char **argv)
 					{
 						// login success, record current user info
 						g_currentUser.setId(id).setName(responsejs["name"]);
-
+						std::cerr << responsejs << std::endl;
 						// record current user friend list
 						if (responsejs.contains("friends"))
 						{
@@ -193,9 +193,22 @@ int main(int argc, char **argv)
 							for (std::string &str : vec)
 							{
 								json js = json::parse(str);
-								// time + [id] + name + " said: " + msg
-								std::cout << js["time"] << " [" << js["id"] << "] "
-										  << js["name"] << " said: " << js["msg"] << std::endl;
+								int msgtype = js["msgid"].get<int>();
+								if (ONE_CHAT_MSG == msgtype)
+								{
+									std::cout << js["time"].get<std::string>() << " [" << js["id"] << "] "
+											  << js["name"].get<std::string>() << " said: "
+											  << js["msg"].get<std::string>() << std::endl;
+									continue;
+								}
+								else if (GROUP_CHAT_MSG == msgtype)
+								{
+									std::cout << "group messsage[" << js["groupid"] << "]:"
+											  << js["time"].get<std::string>() << " [" << js["id"]
+											  << "]" << js["name"].get<std::string>()
+											  << " said: " << js["msg"].get<std::string>() << std::endl;
+									continue;
+								}
 							}
 						}
 
@@ -306,11 +319,20 @@ void readTaskHandler(int clientfd)
 
 		// receive message from server, deserialize it
 		json js = json::parse(buffer);
-		if (ONE_CHAT_MSG == js["msgid"].get<int>())
+		int msgtype = js["msgid"].get<int>();
+		if (ONE_CHAT_MSG == msgtype)
 		{
 			std::cout << js["time"].get<std::string>() << " [" << js["id"] << "] "
 					  << js["name"].get<std::string>() << " said: "
 					  << js["msg"].get<std::string>() << std::endl;
+			continue;
+		}
+		else if (GROUP_CHAT_MSG == msgtype)
+		{
+			std::cout << "group messsage[" << js["groupid"] << "]:"
+					  << js["time"].get<std::string>() << " [" << js["id"]
+					  << "]" << js["name"].get<std::string>()
+					  << " said: " << js["msg"].get<std::string>() << std::endl;
 			continue;
 		}
 	}
@@ -440,16 +462,73 @@ void chat(int clientfd, std::string str)
 	}
 }
 
-void creategroup(int, std::string)
+void creategroup(int clientfd, std::string str)
 {
+	int idx = str.find(":");
+	if (-1 == idx)
+	{
+		std::cerr << "creategroup command invalid!" << std::endl;
+		return;
+	}
+	std::string groupname = str.substr(0, idx);
+	std::string groupdesc = str.substr(idx + 1, str.size() - idx);
+
+	json js;
+	js["msgid"] = CREATE_GROUP_MSG;
+	js["id"] = g_currentUser.getId();
+	js["groupname"] = groupname;
+	js["groupdesc"] = groupdesc;
+	std::string buffer = js.dump();
+
+	int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+	if (-1 == len)
+	{
+		std::cerr << "send creategroup msg error: " << buffer << std::endl;
+	}
 }
 
-void addgroup(int, std::string)
+void addgroup(int clientfd, std::string str)
 {
+	int groupid = atoi(str.c_str());
+	json js;
+	js["msgid"] = ADD_GROUP_MSG;
+	js["id"] = g_currentUser.getId();
+	js["groupid"] = groupid;
+	std::string buffer = js.dump();
+
+	int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+	if (-1 == len)
+	{
+		std::cerr << "send addgroup msg error: " << buffer << std::endl;
+	}
 }
 
-void groupchat(int, std::string)
+void groupchat(int clientfd, std::string str)
 {
+	int idx = str.find(":");
+	if (-1 == idx)
+	{
+		std::cerr << "groupchat command invalid!" << std::endl;
+		return;
+	}
+
+	int groupid = atoi(str.substr(0, idx).c_str());
+	std::string msg = str.substr(idx + 1, str.size() - idx);
+
+	json js;
+	js["msgid"] = GROUP_CHAT_MSG;
+	js["id"] = g_currentUser.getId();
+	js["name"] = g_currentUser.getName();
+	js["groupid"] = groupid;
+	js["msg"] = msg;
+	js["time"] = getCurrentTime();
+	std::string buffer = js.dump();
+
+	int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+	if (-1 == len)
+	{
+		std::cerr << "send groupchat msg error: " << buffer << std::endl;
+	}
 }
 
 void logout(int, std::string)
@@ -458,11 +537,11 @@ void logout(int, std::string)
 
 std::string getCurrentTime()
 {
-    auto tt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    struct tm *ptm = localtime(&tt);
-    char date[60] = {0};
-    sprintf(date, "%d-%02d-%02d %02d:%02d:%02d",
-            (int)ptm->tm_year + 1900, (int)ptm->tm_mon + 1, (int)ptm->tm_mday,
-            (int)ptm->tm_hour, (int)ptm->tm_min, (int)ptm->tm_sec);
-    return std::string(date);
+	auto tt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	struct tm *ptm = localtime(&tt);
+	char date[60] = {0};
+	sprintf(date, "%d-%02d-%02d %02d:%02d:%02d",
+			(int)ptm->tm_year + 1900, (int)ptm->tm_mon + 1, (int)ptm->tm_mday,
+			(int)ptm->tm_hour, (int)ptm->tm_min, (int)ptm->tm_sec);
+	return std::string(date);
 }
