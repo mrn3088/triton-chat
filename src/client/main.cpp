@@ -145,7 +145,7 @@ int main(int argc, char **argv)
 						std::cerr << responsejs << std::endl;
 						// record current user friend list
 						if (responsejs.contains("friends"))
-						{	
+						{
 							// in case of login again, clear the friend list
 							g_currentUserFriendList.clear();
 
@@ -325,7 +325,7 @@ void readTaskHandler(int clientfd)
 	while (true)
 	{
 		char buffer[1024] = {0};
-		int len = recv(clientfd, buffer, 1024, 0); 
+		int len = recv(clientfd, buffer, 1024, 0);
 		if (-1 == len || 0 == len)
 		{
 			close(clientfd);
