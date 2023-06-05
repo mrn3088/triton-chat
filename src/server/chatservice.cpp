@@ -51,6 +51,12 @@ ChatService::ChatService()
     _msgHandlerMap.insert({GROUP_CHAT_MSG,
                            std::bind(&ChatService::groupChat, this, std::placeholders::_1,
                                      std::placeholders::_2, std::placeholders::_3)});
+
+    if (_redis.connect())
+    {
+        _redis.init_notify_handler(std::bind(&ChatService::handleRedisSubscribeMessage, this,
+                                             std::placeholders::_1, std::placeholders::_2));
+    }
 }
 
 // obtain message handler according to message id
@@ -97,6 +103,9 @@ void ChatService::login(const TcpConnectionPtr &conn, json &js, Timestamp time)
                 std::lock_guard<std::mutex> lock(_connMutex);
                 _userConnMap.insert({id, conn});
             }
+
+            // subscribe user id to redis
+            _redis.subscribe(id);
 
             // login success, state offline => online
             user.setState("online");
@@ -214,11 +223,13 @@ void ChatService::logout(const TcpConnectionPtr &conn, json &js, Timestamp time)
         }
     }
 
+    // unsubscribe user id to redis
+    _redis.unsubscribe(userid);
+
     // update user state to offline
     User user(userid, "", "", "offline");
     _userModel.updateState(user);
 }
-
 
 void ChatService::clientCloseException(const TcpConnectionPtr &conn)
 {
@@ -235,6 +246,9 @@ void ChatService::clientCloseException(const TcpConnectionPtr &conn)
             }
         }
     }
+
+    // unsubscribe user id to redis
+    _redis.unsubscribe(user.getId());
 
     if (user.getId() == -1)
     {
@@ -257,6 +271,14 @@ void ChatService::oneChat(const TcpConnectionPtr &conn, json &js, Timestamp time
             it->second->send(js.dump());
             return;
         }
+    }
+
+    User user = _userModel.query(toid);
+    if (user.getState() == "online")
+    {
+        // toid online, forward message to toid user
+        _redis.publish(toid, js.dump());
+        return;
     }
 
     // not online, store offline message
@@ -312,8 +334,35 @@ void ChatService::groupChat(const TcpConnectionPtr &conn, json &js, Timestamp ti
         }
         else
         {
-            // store offline group message
-            _offlineMsgModel.insert(id, js.dump());
+            User user = _userModel.query(id);
+            if (user.getState() == "online")
+            {
+                // send group message to the user
+                _redis.publish(id, js.dump());
+            }
+            else
+            {
+                // store offline group message
+                _offlineMsgModel.insert(id, js.dump());
+            }
         }
+    }
+}
+
+void ChatService::handleRedisSubscribeMessage(int userid, std::string msg)
+{
+    json js = json::parse(msg.c_str());
+
+    std::lock_guard<std::mutex> lock(_connMutex);
+    auto it = _userConnMap.find(userid);
+    if (it != _userConnMap.end())
+    {
+        // send message to user
+        it->second->send(js.dump());
+    }
+    else
+    {
+        // store offline message
+        _offlineMsgModel.insert(userid, msg);
     }
 }

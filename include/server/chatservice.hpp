@@ -11,6 +11,7 @@
 #include "friendmodel.hpp"
 #include "groupmodel.hpp"
 #include "json.hpp"
+#include "redis.hpp"
 
 using json = nlohmann::json;
 using muduo::Timestamp;
@@ -46,7 +47,8 @@ public:
 	void clientCloseException(const TcpConnectionPtr &conn);
 	// server error, reset client data
 	void reset();
-
+	// handle redis subscribe message
+	void handleRedisSubscribeMessage(int, std::string);
 private:
 	ChatService();
 
@@ -70,6 +72,9 @@ private:
 
 	// group data model
 	GroupModel _groupModel;
+
+	// redis instance
+	Redis _redis;
 	
 };
 
